@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "text-to-sql-mcp"
+version = "0.1.0"
+description = "MCP server translating natural-language questions into SQL over a multi-table SQLite schema, with AST-based validation rejecting unsafe or malformed queries before execution."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Hamza Ouadid" }]
+dependencies = [
+    "typer>=0.12",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "sqlglot>=27.0",
+    "mcp>=1.0.0",
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "pytest-cov>=5.0"]
+anthropic = ["anthropic>=0.75.0"]
+openai = ["openai>=2.0.0"]
+
+[project.scripts]
+text-to-sql-mcp = "text_to_sql_mcp.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
