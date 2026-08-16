@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install package + dev dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run full test suite (adversarial validator suite + end-to-end MCP client tests)
+        run: pytest -v
+
+      - name: Build the demo database (deterministic seed, offline)
+        run: text-to-sql-mcp init-db
+
+      - name: Smoke-test the CLI end to end
+        run: |
+          text-to-sql-mcp schema
+          text-to-sql-mcp ask "How many permits are there in total?"
+
+      - name: Run the labelled eval set and print accuracy + rejection stats
+        run: text-to-sql-mcp eval
+
+      - name: Print the operator-facing rejection-rate report
+        run: text-to-sql-mcp rejection-report

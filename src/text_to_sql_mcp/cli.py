@@ -4,6 +4,8 @@
     text-to-sql-mcp schema           # print the introspected schema
     text-to-sql-mcp ask "..."        # ask one question
     text-to-sql-mcp eval             # run the labelled eval set, print report
+    text-to-sql-mcp rejection-report # print the operator-facing rejection stats
+    text-to-sql-mcp serve            # run the MCP server over stdio
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from .db.seed import build_civic_db, init_app_db
 from .introspection import list_schema as _list_schema
 from .introspection import schema_to_dict
 from .llm.factory import get_llm_client
+from .query_log import rejection_rate_report
 from .service import ask as _ask
 
 app = typer.Typer(add_completion=False, help="Text-to-SQL MCP server with AST-based validation.")
@@ -68,6 +71,22 @@ def eval_cmd() -> None:
     typer.echo(f"Running eval with backend: {llm_client.name}")
     report = run_eval(settings, llm_client)
     typer.echo(json.dumps(report.as_dict(), indent=2))
+
+
+@app.command("rejection-report")
+def rejection_report_cmd() -> None:
+    """Print the operator-facing rejection-rate report from query_log."""
+    settings = get_settings()
+    report = rejection_rate_report(settings.app_db_abspath())
+    typer.echo(json.dumps(report.as_dict(), indent=2))
+
+
+@app.command("serve")
+def serve_cmd() -> None:
+    """Run the MCP server over stdio."""
+    from .mcp_server import main as run_server
+
+    run_server()
 
 
 if __name__ == "__main__":
